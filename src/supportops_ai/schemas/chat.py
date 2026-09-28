@@ -3,7 +3,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, StringConstraints
 
-
 # 定义一个“带约束的字符串类型”
 #
 # 本质上它还是 str，
@@ -36,7 +35,6 @@ MessageText = Annotated[
 # BaseModel 表示这是一个 Pydantic 数据模型，
 # FastAPI 收到请求后会自动按照这个模型校验数据
 class ChatRequest(BaseModel):
-
     # 用户发送的聊天内容
     #
     # 类型不是普通 str，
@@ -62,7 +60,6 @@ class ChatRequest(BaseModel):
 
 # 定义聊天接口的“响应数据结构”
 class ChatResponse(BaseModel):
-
     # 返回当前会话的唯一 ID
     #
     # 如果请求中已经有 session_id，
