@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
+    http_timeout_seconds: float = 30.0
+    http_max_connections: int = 100
+    http_max_keepalive_connections: int = 20
+
     # 配置 Pydantic Settings 的读取和解析规则
     model_config = SettingsConfigDict(
         # 从项目根目录下的 .env 文件读取环境变量

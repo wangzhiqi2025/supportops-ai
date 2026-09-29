@@ -4,12 +4,11 @@ from supportops_ai.api.deps import get_chat_service
 from supportops_ai.core.exceptions import AppError
 from supportops_ai.main import app
 from supportops_ai.schemas.chat import ChatRequest, ChatResponse
-from supportops_ai.services.chat_service import ChatService
-
-client = TestClient(app)
 
 
-class FailingChatService(ChatService):
+class FailingChatService:
+    """用于测试业务异常处理的假 ChatService。"""
+
     async def chat(
         self,
         request: ChatRequest,
@@ -21,7 +20,7 @@ class FailingChatService(ChatService):
         )
 
 
-def test_chat_success() -> None:
+def test_chat_success(client: TestClient) -> None:
     response = client.post(
         "/api/v1/chat",
         json={
@@ -37,7 +36,7 @@ def test_chat_success() -> None:
     assert data["answer"] == "Received message: Docker Desktop cannot start."
 
 
-def test_chat_rejects_empty_message() -> None:
+def test_chat_rejects_empty_message(client: TestClient) -> None:
     response = client.post(
         "/api/v1/chat",
         json={
@@ -54,7 +53,7 @@ def test_chat_rejects_empty_message() -> None:
     assert "request_id" in data
 
 
-def test_chat_strips_message_whitespace() -> None:
+def test_chat_strips_message_whitespace(client: TestClient) -> None:
     response = client.post(
         "/api/v1/chat",
         json={
@@ -66,7 +65,7 @@ def test_chat_strips_message_whitespace() -> None:
     assert response.json()["answer"] == "Received message: Docker error"
 
 
-def test_chat_preserves_session_id() -> None:
+def test_chat_preserves_session_id(client: TestClient) -> None:
     session_id = "550e8400-e29b-41d4-a716-446655440000"
 
     response = client.post(
@@ -81,7 +80,9 @@ def test_chat_preserves_session_id() -> None:
     assert response.json()["session_id"] == session_id
 
 
-def test_chat_handles_application_error() -> None:
+def test_chat_handles_application_error(client: TestClient) -> None:
+    # 用测试专用 Service 替换真实的 get_chat_service，
+    # 从而人为制造 AppError，验证全局异常处理逻辑。
     app.dependency_overrides[get_chat_service] = lambda: FailingChatService()
 
     try:
@@ -101,4 +102,6 @@ def test_chat_handles_application_error() -> None:
         assert "request_id" in data
 
     finally:
+        # 无论测试成功还是失败，都清除依赖覆盖，
+        # 避免影响后续其他测试。
         app.dependency_overrides.clear()

@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from supportops_ai.api.router import api_router
 from supportops_ai.core.config import settings
 from supportops_ai.core.exception_handlers import register_exception_handlers
+from supportops_ai.core.lifespan import lifespan
 from supportops_ai.core.logging import configure_logging
 from supportops_ai.middleware.request_context import RequestContextMiddleware
 
@@ -14,6 +15,7 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         debug=settings.debug,
         version="0.1.0",
+        lifespan=lifespan,
     )
 
     app.add_middleware(RequestContextMiddleware)
